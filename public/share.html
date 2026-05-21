@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description"
+        content="Beamly — Share your files securely with end-to-end encryption." />
+    <title>Beamly — Share File</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <style>
+        /* ─── Splash Screen ─── */
+        #splash-screen {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 40px;
+            overflow: hidden;
+            background-color: var(--bg);
+            z-index: 9999;
+            contain: layout style paint;
+            will-change: opacity;
+            transition: opacity 0.45s ease, visibility 0.45s ease;
+        }
+
+        #splash-screen.hide {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        #splash-screen .splash-container {
+            text-align: center;
+            z-index: 1;
+            transform: translateZ(0);
+            will-change: transform, opacity;
+        }
+
+        #splash-screen .splash-title {
+            display: inline-block;
+            font-family: var(--font-heading);
+            font-size: 5rem;
+            font-weight: 800;
+            letter-spacing: -3px;
+            color: #fff;
+            text-shadow:
+                0 0 10px var(--accent),
+                0 0 24px var(--accent-glow),
+                0 0 42px var(--accent-glow);
+            will-change: transform, opacity;
+            animation: splash-title-breathe 1.8s ease-in-out infinite alternate;
+        }
+
+        #splash-screen .loading-bar-container {
+            width: 320px;
+            max-width: calc(100vw - 48px);
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 18px;
+        }
+
+        #splash-screen .loading-bar {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, var(--accent), #0092ff, var(--accent));
+            background-size: 200% auto;
+            border-radius: 2px;
+            transform: scaleX(0);
+            transform-origin: left center;
+            will-change: transform;
+            animation: splash-loading 2.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards, splash-shimmer 1.2s linear infinite;
+        }
+
+        #splash-screen .loading-text {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 20px;
+            will-change: opacity;
+        }
+
+        #splash-screen .bg-glow {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 229, 195, 0.15) 0%, transparent 70%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            will-change: transform, opacity;
+            animation: splash-pulse 2.2s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes splash-title-breathe {
+            0% { opacity: 0.9; transform: translateZ(0) scale(1); }
+            100% { opacity: 1; transform: translateZ(0) scale(1.02); }
+        }
+
+        @keyframes splash-loading {
+            0% { transform: scaleX(0); }
+            60% { transform: scaleX(0.85); }
+            100% { transform: scaleX(1); }
+        }
+
+        @keyframes splash-shimmer {
+            0% { background-position: 200% center; }
+            100% { background-position: 0% center; }
+        }
+
+        @keyframes splash-pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.45; }
+            50% { transform: translate(-50%, -50%) scale(1.08); opacity: 0.75; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            #splash-screen, #splash-screen * { animation: none !important; transition: none !important; }
+        }
+
+        /* Light theme splash overrides */
+        body.light-theme #splash-screen .splash-title {
+            color: #0f172a;
+            text-shadow:
+                0 0 10px rgba(0, 229, 195, 0.4),
+                0 0 24px rgba(0, 229, 195, 0.25),
+                0 0 42px rgba(0, 229, 195, 0.15);
+        }
+
+        body.light-theme #splash-screen .loading-bar-container { background: rgba(0, 0, 0, 0.1); }
+        body.light-theme #splash-screen .loading-text { color: rgba(15, 23, 42, 0.55); }
+        body.light-theme #splash-screen .bg-glow { background: radial-gradient(circle, rgba(0, 229, 195, 0.2) 0%, transparent 70%); }
+
+        /* ─── Share Page Layout ─── */
+        .share-wrapper {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .share-main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 24px;
+            padding-top: 100px;
+            position: relative;
+            z-index: 5;
+        }
+
+        .share-main .section {
+            padding: 0;
+        }
+
+        /* ─── Options Styling ─── */
+        .logged-in-options {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .option-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .option-group label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.88rem;
+            color: var(--txt-mid);
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        /* Light theme overrides */
+        body.light-theme .section-heading h2 { color: var(--txt); }
+
+        /* ─── Footer ─── */
+        .landing-footer {
+            text-align: center;
+            padding: 48px 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+            position: relative;
+            z-index: 5;
+        }
+        .landing-footer .footer-brand {
+            font-family: var(--font-heading);
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+        .landing-footer .footer-copy {
+            font-size: 0.78rem;
+            color: var(--txt-dim);
+            font-family: var(--font-mono);
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        (function() {
+            var t = localStorage.getItem('beamly-theme');
+            if (t === 'light') document.body.classList.add('light-theme');
+        })();
+    </script>
+
+    <!-- ─── Splash Screen ─── -->
+    <div id="splash-screen" aria-hidden="true">
+        <div class="bg-glow"></div>
+        <div class="splash-container">
+            <h1 class="splash-title">Beamly</h1>
+            <div class="loading-bar-container">
+                <div class="loading-bar"></div>
+            </div>
+            <p class="loading-text">Initializing secure connection...</p>
+        </div>
+    </div>
+
+    <!-- ─── Top Auth Bar ─── -->
+    <div class="top-bar" id="top-bar">
+        <div id="guest-bar" class="top-bar-inner">
+            <a href="/" class="top-logo">Beamly</a>
+            <a href="/auth.html" class="auth-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                Login
+            </a>
+        </div>
+        <div id="user-bar" class="top-bar-inner hidden">
+            <a href="/" class="top-logo">Beamly</a>
+            <div class="user-actions">
+                <a href="/dashboard.html" class="top-nav-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    Dashboard
+                </a>
+                <a href="/vault.html" class="top-nav-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    Vault
+                </a>
+                <a href="/dashboard.html" class="user-link" id="user-name-link">
+                    <span class="user-avatar" id="user-avatar">U</span>
+                    <span id="user-display-name">User</span>
+                </a>
+                <button class="auth-btn logout-sm" onclick="logoutUser()">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── Page Content ─── -->
+    <div class="share-wrapper">
+        <div class="share-main">
+            <section class="section" id="app" style="width: 100%; max-width: 600px;">
+                <div class="section-heading" style="margin-bottom: 30px; text-align: center;">
+                    <h2>Start Transferring</h2>
+                    <p>Drag and drop a file to encrypt and share it securely.</p>
+                </div>
+                <!-- Uploader Integration -->
+                <div class="glass-container fade-in" style="animation-delay: 0.1s;">
+                    <!-- Drop Zone -->
+                    <label class="upload-zone" for="file-input" id="drop-zone">
+                        <input type="file" id="file-input" hidden />
+                        <div class="upload-icon-wrapper">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        </div>
+                        <h3>Drag & drop your file here</h3>
+                        <p>or click to browse</p>
+                    </label>
+
+                    <!-- File Info -->
+                    <div id="file-info" class="file-item hidden">
+                        <div class="file-info-text">
+                            <span id="file-name" class="file-name">No file selected</span>
+                            <span id="file-size" class="file-size">-</span>
+                        </div>
+                    </div>
+
+                    <!-- Create Link Button -->
+                    <button id="create-link-btn" class="action-btn hidden">Create Encrypted Link</button>
+
+                    <!-- Logged-in Options (hidden for guests) -->
+                    <div id="logged-in-options" class="logged-in-options hidden">
+                        <div class="option-group">
+                            <label for="expiry-select">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                Link Expiry
+                            </label>
+                            <select id="expiry-select" class="custom-select">
+                                <option value="5">5 minutes</option>
+                                <option value="10" selected>10 minutes</option>
+                                <option value="30">30 minutes</option>
+                                <option value="60">1 hour</option>
+                                <option value="360">6 hours</option>
+                                <option value="1440">24 hours</option>
+                                <option value="4320">3 days</option>
+                                <option value="10080">7 days</option>
+                            </select>
+                        </div>
+
+                        <div class="option-group">
+                            <label class="toggle-label custom-checkbox-label">
+                                <input type="checkbox" id="persist-toggle" class="custom-checkbox" />
+                                <span class="checkbox-indicator">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                </span>
+                                <span class="toggle-text">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                                    Store on server (offline sharing)
+                                </span>
+                            </label>
+                        </div>
+
+                        <div id="download-limit-group" class="option-group hidden">
+                            <label for="download-limit">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                Download limit
+                            </label>
+                            <input type="number" id="download-limit" class="custom-number-input" min="1" max="100" value="1" />
+                        </div>
+                    </div>
+
+                    <!-- Share Link Section -->
+                    <div id="link-section" class="link-section hidden">
+                        <p class="share-title">Share this link with your recipient:</p>
+                        <div class="link-box">
+                            <input type="text" id="share-link" placeholder="Link will appear here..." readonly />
+                            <button id="copy-btn" class="copy-btn">Copy</button>
+                        </div>
+                        <div id="email-share-group" class="email-share-group">
+                            <label for="receiver-email" style="font-size:0.85rem;color:var(--txt-mid);margin-bottom:6px;display:block;margin-top:16px;">Or send via email:</label>
+                            <div class="link-box">
+                                <input type="email" id="receiver-email" placeholder="recipient@email.com" />
+                                <button id="send-email-btn" class="copy-btn" style="background:rgba(0,229,195,0.12);color:var(--accent);">Send</button>
+                            </div>
+                        </div>
+                        <p id="link-expiry-text" class="link-expiry">Link expires in 10 minutes</p>
+                    </div>
+
+                    <!-- Status -->
+                    <p id="status-text" class="status-text"></p>
+
+                    <!-- Progress Bar -->
+                    <div id="progress-section" class="progress-section hidden">
+                        <div class="progress-header">
+                            <span class="progress-label">Encrypting & streaming</span>
+                            <span id="progress-text" class="progress-percent">0%</span>
+                        </div>
+                        <div class="progress-track">
+                            <div id="progress-bar" class="progress-fill" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Reset Button -->
+                    <button id="reset-btn" class="action-btn hidden" style="background: rgba(157, 138, 254, 0.12); color: var(--accent3); box-shadow: none;">
+                        Send Another File
+                    </button>
+                </div>
+            </section>
+        </div>
+
+        <!-- ─── Footer ─── -->
+        <footer class="landing-footer">
+            <div class="footer-brand">Beamly</div>
+            <p class="footer-copy">Built with Web Crypto API • WebSocket • Node.js • MySQL</p>
+        </footer>
+    </div>
+
+    <script src="/js/crypto.js?v=2"></script>
+    <script src="/js/sender.js?v=4"></script>
+    <script>
+        // ─── Splash Screen Handler ───
+        (function handleSplashScreen() {
+            function loadParticlesWhenIdle() {
+                if (window.__beamlyParticlesLoaded) return;
+                window.__beamlyParticlesLoaded = true;
+
+                const loadParticles = () => {
+                    const script = document.createElement('script');
+                    script.src = '/js/particles.js';
+                    script.defer = true;
+                    document.body.appendChild(script);
+                };
+
+                if ('requestIdleCallback' in window) {
+                    requestIdleCallback(loadParticles, { timeout: 1200 });
+                } else {
+                    setTimeout(loadParticles, 120);
+                }
+            }
+
+            const splash = document.getElementById('splash-screen');
+            if (!splash) {
+                loadParticlesWhenIdle();
+                return;
+            }
+
+            // Only show splash on fresh load / reload, not when navigating from other pages
+            const isNavigation = performance.getEntriesByType && performance.getEntriesByType('navigation').length > 0
+                ? performance.getEntriesByType('navigation')[0].type
+                : 'navigate';
+            const showSplash = (isNavigation === 'reload' || !sessionStorage.getItem('beamly-visited'));
+
+            if (!showSplash) {
+                splash.remove();
+                loadParticlesWhenIdle();
+                return;
+            }
+
+            sessionStorage.setItem('beamly-visited', '1');
+
+            const splashTitle = splash.querySelector('.splash-title');
+            const loadingBarContainer = splash.querySelector('.loading-bar-container');
+            const syncSplashBarWidth = () => {
+                if (!splashTitle || !loadingBarContainer) return;
+                const titleWidth = Math.ceil(splashTitle.getBoundingClientRect().width);
+                if (!titleWidth) return;
+
+                const viewportSafeWidth = Math.max(220, window.innerWidth - 48);
+                const targetWidth = Math.min(titleWidth, viewportSafeWidth);
+                loadingBarContainer.style.width = `${targetWidth}px`;
+            };
+
+            requestAnimationFrame(syncSplashBarWidth);
+            if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(() => requestAnimationFrame(syncSplashBarWidth));
+            }
+            window.addEventListener('resize', syncSplashBarWidth, { passive: true });
+
+            setTimeout(() => {
+                splash.classList.add('hide');
+                window.removeEventListener('resize', syncSplashBarWidth);
+                setTimeout(() => splash.remove(), 500);
+                loadParticlesWhenIdle();
+            }, 2600);
+        })();
+
+        // ─── Auto-check "Store on server" when expiry is changed ───
+        document.getElementById('expiry-select').addEventListener('change', (e) => {
+            const persistToggle = document.getElementById('persist-toggle');
+            if(persistToggle) {
+                persistToggle.checked = true;
+                persistToggle.dispatchEvent(new Event('change'));
+            }
+        });
+
+        // ─── Auth state check ───
+        (async function updateAuthUI() {
+            try {
+                const res = await fetch('/api/auth/me');
+                const data = await res.json();
+                if (data.loggedIn) {
+                    document.getElementById('guest-bar').classList.add('hidden');
+                    document.getElementById('user-bar').classList.remove('hidden');
+                    document.getElementById('user-display-name').textContent = data.user.username;
+                    document.getElementById('user-avatar').textContent = data.user.username.charAt(0).toUpperCase();
+                    
+                    // Show logged-in options
+                    const opts = document.getElementById('logged-in-options');
+                    if (opts) opts.classList.remove('hidden');
+
+                    window.__beamlyLoggedIn = true;
+                }
+            } catch (err) { /* guest mode */ }
+        })();
+
+        async function logoutUser() {
+            try {
+                await fetch('/api/auth/logout', { method: 'POST' });
+                window.location.href = '/';
+            } catch (err) {
+                console.error('Logout failed', err);
+            }
+        }
+    </script>
+</body>
+</html>

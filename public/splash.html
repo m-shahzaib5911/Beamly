@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Beamly — Loading</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap"
+        rel="stylesheet" />
+    <style>
+        :root {
+            --accent: #00e5c3;
+            --accent-glow: rgba(0, 229, 195, 0.4);
+            --bg: #0b0f19;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 40px;
+            overflow: hidden;
+        }
+
+        .splash-container {
+            text-align: center;
+        }
+
+        .splash-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 5rem;
+            font-weight: 800;
+            letter-spacing: -3px;
+            color: #fff;
+            text-shadow: 
+                0 0 10px var(--accent),
+                0 0 20px var(--accent),
+                0 0 40px var(--accent),
+                0 0 80px var(--accent-glow),
+                0 0 120px var(--accent-glow);
+            animation: glow 2s ease-in-out infinite alternate, fadeOut 0.5s ease-out 2.5s forwards;
+        }
+
+        @keyframes glow {
+            0% {
+                text-shadow: 
+                    0 0 10px var(--accent),
+                    0 0 20px var(--accent),
+                    0 0 40px var(--accent),
+                    0 0 80px var(--accent-glow);
+            }
+            100% {
+                text-shadow: 
+                    0 0 20px var(--accent),
+                    0 0 40px var(--accent),
+                    0 0 80px var(--accent),
+                    0 0 120px var(--accent),
+                    0 0 160px var(--accent-glow);
+            }
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: scale(1.1);
+            }
+        }
+
+        .loading-bar-container {
+            width: 300px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            animation: fadeOut 0.5s ease-out 2.5s forwards;
+        }
+
+        .loading-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent), #0092ff, var(--accent));
+            background-size: 200% auto;
+            border-radius: 2px;
+            animation: loadingProgress 2.5s ease-out forwards, shimmer 1s linear infinite;
+        }
+
+        @keyframes loadingProgress {
+            0% { width: 0%; }
+            60% { width: 85%; }
+            100% { width: 100%; }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% center; }
+            100% { background-position: 0% center; }
+        }
+
+        .loading-text {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 20px;
+            animation: fadeOut 0.5s ease-out 2.5s forwards;
+        }
+
+        .bg-glow {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 229, 195, 0.15) 0%, transparent 70%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: pulseGlow 2s ease-in-out infinite, fadeOut 0.5s ease-out 2.5s forwards;
+            pointer-events: none;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-glow"></div>
+    
+    <div class="splash-container">
+        <h1 class="splash-title">Beamly</h1>
+        <div class="loading-bar-container">
+            <div class="loading-bar"></div>
+        </div>
+        <p class="loading-text">Initializing secure connection...</p>
+    </div>
+
+    <script>
+        setTimeout(() => {
+            window.location.href = '/landing.html';
+        }, 3000);
+    </script>
+</body>
+
+</html>

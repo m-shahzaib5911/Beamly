@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Beamly — Secure file download with end-to-end encryption." />
+    <title>Beamly — Download</title>
+    <!-- Modern typography -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="/css/style.css" />
+</head>
+
+<body>
+
+    <div class="wrapper">
+        <!-- Header -->
+        <div class="header-title fade-in">
+            <span>Beamly</span>
+        </div>
+
+        <!-- Badge -->
+        <div class="fade-in" style="animation-delay: 0.05s; text-align: center; margin-bottom: 10px;">
+            <span
+                style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; border-radius: 100px; background: rgba(0, 229, 195, 0.08); border: 1px solid rgba(0, 229, 195, 0.15); color: var(--accent); font-size: 0.8rem; font-weight: 500;">
+                <span
+                    style="width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s ease-in-out infinite;"></span>
+                End-to-End Encrypted
+            </span>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading-section" class="glass-container fade-in text-center" style="animation-delay: 0.1s;">
+            <div class="loading-spinner"></div>
+            <p class="loading-text">Fetching transfer details...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="error-section" class="glass-container text-center hidden" style="animation-delay: 0.1s;">
+            <h2 class="error-title">Link Not Available</h2>
+            <p id="error-message" class="error-msg">This download link no longer exists or has expired.</p>
+            <a href="/" class="action-btn"
+                style="display: inline-block; margin-top: 1.5rem; background: rgba(157, 138, 254, 0.12); color: var(--accent3); box-shadow: none;">←
+                Back to Beamly</a>
+        </div>
+
+        <!-- Download Ready -->
+        <div id="download-section" class="glass-container hidden" style="animation-delay: 0.1s;">
+            <div class="download-header">
+                <h2>Encrypted File Ready</h2>
+                <p class="download-subtitle">This file is end-to-end encrypted. It will be decrypted in your browser.
+                </p>
+            </div>
+
+            <div class="file-item">
+                <div class="file-info-text">
+                    <span id="dl-file-name" class="file-name">filename.ext</span>
+                    <span id="dl-file-size" class="file-size">0 KB</span>
+                </div>
+            </div>
+
+            <button id="start-download-btn" class="action-btn">
+                Start Secure Download
+            </button>
+
+            <div class="download-note">
+                <p>Do not close this tab during the transfer</p>
+            </div>
+        </div>
+
+        <!-- Progress -->
+        <div id="progress-section" class="glass-container hidden" style="animation-delay: 0.1s;">
+            <div class="download-header">
+                <div class="shield-icon animated-pulse" style="color: var(--accent); font-size: 2rem;">🔒</div>
+                <h2>Receiving & Decrypting</h2>
+            </div>
+
+            <p id="status-text" class="status-text"></p>
+
+            <div class="progress-header">
+                <span class="progress-label">Decrypting file</span>
+                <span id="progress-text" class="progress-percent">0%</span>
+            </div>
+            <div class="progress-track">
+                <div id="progress-bar" class="progress-fill" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- Save File (shown after decryption completes) -->
+        <div id="save-section" class="glass-container text-center hidden" style="animation-delay: 0.1s;">
+            <svg class="result-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                style="color: var(--accent); margin-bottom: 16px;">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            <h2 style="font-family: var(--font-heading); font-weight: 700;">Decryption Complete!</h2>
+            <p class="success-msg">Your file has been securely decrypted and is ready to save.</p>
+
+            <div class="file-item" style="margin: 1.5rem 0;">
+                <div class="file-info-text">
+                    <span id="save-file-name" class="file-name"></span>
+                    <span id="save-file-size" class="file-size"></span>
+                </div>
+            </div>
+
+            <a id="save-file-btn" class="download-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Save File
+            </a>
+
+            <p class="link-expiry" style="margin-top: 1rem;">Click above to save the decrypted file to your device</p>
+            <a href="/" class="action-btn"
+                style="display: inline-block; margin-top: 1rem; background: rgba(157, 138, 254, 0.12); color: var(--accent3); box-shadow: none;">←
+                Send your own file</a>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer fade-in" style="animation-delay: 0.2s;">
+            MADE BY ASR
+            <p class="footer-tech">Built with Web Crypto API • WebSocket • Node.js • MySQL</p>
+        </div>
+    </div>
+
+    <script src="/js/particles.js"></script>
+    <script src="/js/crypto.js?v=2"></script>
+    <script src="/js/receiver.js?v=3"></script>
+</body>
+
+</html>

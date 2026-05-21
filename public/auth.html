@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Beamly — Login or create an account for encrypted file sharing." />
+    <title>Beamly — Login / Sign Up</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="/css/style.css" />
+</head>
+
+<body>
+
+    <div class="wrapper">
+        <!-- Header -->
+        <a href="/" class="header-title fade-in" style="text-decoration: none;">
+            <span>Beamly</span>
+        </a>
+
+        <!-- Auth Container -->
+        <div class="glass-container fade-in" style="animation-delay: 0.1s; max-width: 460px;">
+
+            <!-- Tab Toggle -->
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="login-tab" onclick="switchTab('login')">Login</button>
+                <button class="auth-tab" id="signup-tab" onclick="switchTab('signup')">Sign Up</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form" class="auth-form" onsubmit="return handleLogin(event)">
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" class="form-input" placeholder="you@example.com"
+                        autocomplete="email" required />
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" class="form-input" placeholder="••••••••"
+                        autocomplete="current-password" required />
+                </div>
+                <button type="button" class="dash-link" onclick="showPasswordResetRequest()"
+                    style="margin-top: -6px; align-self: flex-start; padding: 6px 14px;">Forgot password?</button>
+                <button type="submit" class="action-btn" id="login-btn">Login</button>
+            </form>
+
+            <!-- Signup Form -->
+            <form id="signup-form" class="auth-form hidden" onsubmit="return handleSignup(event)">
+                <div class="form-group">
+                    <label for="signup-username">Username</label>
+                    <input type="text" id="signup-username" class="form-input" placeholder="coolhacker"
+                        autocomplete="username" required minlength="3" maxlength="50" />
+                </div>
+                <div class="form-group">
+                    <label for="signup-email">Email</label>
+                    <input type="email" id="signup-email" class="form-input" placeholder="you@example.com"
+                        autocomplete="email" required />
+                </div>
+                <div class="form-group">
+                    <label for="signup-password">Password</label>
+                    <input type="password" id="signup-password" class="form-input" placeholder="Min 6 characters"
+                        autocomplete="new-password" required minlength="6" />
+                </div>
+                <button type="submit" class="action-btn" id="signup-btn">Create Account</button>
+            </form>
+
+            <!-- Signup Verify Form -->
+            <form id="signup-verify-form" class="auth-form hidden" onsubmit="return handleSignupVerification(event)">
+                <div class="form-group">
+                    <label for="signup-verify-email">Verify your email</label>
+                    <input type="email" id="signup-verify-email" class="form-input" autocomplete="email" readonly />
+                </div>
+                <div class="form-group">
+                    <label for="signup-verification-code">6-digit verification code</label>
+                    <input type="text" id="signup-verification-code" class="form-input" placeholder="123456"
+                        inputmode="numeric" pattern="\d{6}" maxlength="6" required />
+                </div>
+                <button type="submit" class="action-btn" id="signup-verify-btn">Verify & Create Account</button>
+                <button type="button" class="dash-link" onclick="backToSignupFromVerification()"
+                    style="margin-top: 0; align-self: flex-start; padding: 6px 14px;">Back to sign up</button>
+            </form>
+
+            <!-- Reset Request Form -->
+            <form id="reset-request-form" class="auth-form hidden" onsubmit="return handlePasswordResetRequest(event)">
+                <div class="form-group">
+                    <label for="reset-email">Reset your password</label>
+                    <input type="email" id="reset-email" class="form-input" placeholder="you@example.com"
+                        autocomplete="email" required />
+                </div>
+                <button type="submit" class="action-btn" id="reset-request-btn">Send Reset Link</button>
+                <button type="button" class="dash-link" onclick="switchTab('login')"
+                    style="margin-top: 0; align-self: flex-start; padding: 6px 14px;">Back to login</button>
+            </form>
+
+            <!-- Reset Confirm Form -->
+            <form id="reset-confirm-form" class="auth-form hidden" onsubmit="return handlePasswordResetConfirm(event)">
+                <div class="form-group">
+                    <label for="reset-verification-code">6-digit verification code</label>
+                    <input type="text" id="reset-verification-code" class="form-input" placeholder="123456"
+                        inputmode="numeric" pattern="\d{6}" maxlength="6" required />
+                </div>
+                <div class="form-group">
+                    <label for="reset-new-password">Set a new password</label>
+                    <input type="password" id="reset-new-password" class="form-input" placeholder="Min 6 characters"
+                        autocomplete="new-password" required minlength="6" />
+                </div>
+                <div class="form-group">
+                    <label for="reset-confirm-password">Confirm password</label>
+                    <input type="password" id="reset-confirm-password" class="form-input" placeholder="Repeat password"
+                        autocomplete="new-password" required minlength="6" />
+                </div>
+                <button type="submit" class="action-btn" id="reset-confirm-btn">Update Password</button>
+                <button type="button" class="dash-link" onclick="switchTab('login')"
+                    style="margin-top: 0; align-self: flex-start; padding: 6px 14px;">Cancel</button>
+            </form>
+
+            <!-- Status Message -->
+            <p id="auth-message" class="auth-message"></p>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer fade-in" style="animation-delay: 0.2s;">
+            MADE BY ASR
+            <p class="footer-tech">Built with Web Crypto API • WebSocket • Node.js • MySQL</p>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            var t = localStorage.getItem('beamly-theme');
+            if (t === 'light') document.body.classList.add('light-theme');
+        })();
+    </script>
+    <script src="/js/particles.js"></script>
+    <script src="/js/auth.js"></script>
+</body>
+
+</html>
